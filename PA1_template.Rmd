@@ -5,10 +5,6 @@
 Show any code that is needed to Load the data (i.e. read.csv()) and to transform the data and showing the summary.
 
 ```{r}
-```
-
-
-```{r}
       file <- "~/WorkspaceR/05_ReproducibleResearch/Peer Assessment 1/activity.csv"
       actData <- read.csv(file = file, sep = ",")
       summary(actData)
@@ -30,3 +26,52 @@ Calculate and report the mean and median total number of steps taken per day
 The median is `r m1` and the median is `r m2`.
 
 ##What is the average daily activity pattern?
+Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+
+```{r}
+      stepsPerInt <- aggregate(steps ~ interval, actData, mean)
+      plot(stepsPerInt$steps ~ stepsPerInt$interval,
+           type = "l",
+           main = "Avg. daily activity pattern",
+           xlab = "Interval",
+           ylab = "Avg. steps")
+```
+
+Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+```{r}
+      
+      max_steps <- max(stepsPerInt$steps)
+      subValues <- subset(stepsPerInt, steps == max_steps)
+      sub1 <- subValues$interval
+```
+
+The interval which contains the maximum number of steps is `r sub1`.
+
+Imputing missing values
+
+Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
+
+Calculate and report the total number of missing values in the dataset
+```{r}
+      missingValues <- nrow(actData[!complete.cases(actData),])
+```
+
+The total Number of missing values is: `r missingValues`.
+
+Devise a strategy for filling in all of the missing values in the dataset. Replace NA with 5min interval.
+Create a new dataset that is equal to the original dataset but with the missing data filled in.
+```{r}
+      correctedData<-actData
+      correctedData[is.na(correctedData[, 1]), 1]<-stepsPerInt[is.na(correctedData[, 1]),2]
+```
+
+Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+```{r}
+      qplot(date, weight=correctedData$steps, data=correctedData, geom="histogram")
+      m3 <- mean(tapply(correctedData$steps, correctedData$date, sum, na.rm = TRUE))
+      m4 <- median(tapply(correctedData$steps, correctedData$date, sum, na.rm = TRUE))
+```
+
+The new median from the corrected dataset is `r m3` and the median is `r m4`.
+There are small changes for the mean and median values.
